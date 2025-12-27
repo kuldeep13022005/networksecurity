@@ -1,3 +1,10 @@
 pandas
 numpy
 python-dotenv
+pymongo
+Certifi
+
+
+
+##-e .
+##this refers to setup.py and thus a new NetworkSecurity folder gets created
