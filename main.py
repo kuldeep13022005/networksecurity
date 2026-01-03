@@ -10,7 +10,7 @@ import sys
 if __name__=="__main__":
     try:
         trainingpipelineconfig=TrainingPipelineConfig()
-        dataingestionconfig=DataIngestionConfig
+        dataingestionconfig=DataIngestionConfig(trainingpipelineconfig)
         data_ingestion=DataIngestion(dataingestionconfig)
         logging.info("Initiate the data ingestion")
         dataingestionaritfact=data_ingestion.initiate_data_ingestion()
