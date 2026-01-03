@@ -70,5 +70,5 @@ if __name__=='__main__':
     print(no_of_records)
     
     
-## here i gett issue but now i added ip address in the mongodb atlas and set it to entry from anywhere under network access
+## here i get issue but now i added ip address in the mongodb atlas and set it to entry from anywhere under network access
 
