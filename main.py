@@ -14,7 +14,7 @@ if __name__=="__main__":
         data_ingestion=DataIngestion(dataingestionconfig)
         logging.info("Initiate the data ingestion")
         dataingestionaritfact=data_ingestion.initiate_data_ingestion()
-        print(dataingestionaritfact)
+        print(dataingestionaritfact)    
         
     
     
