@@ -1,11 +1,6 @@
-FROM python:3.10-slim-buster
+FROM python:3.10-slim
 
 WORKDIR /app
-
-# Install git or compile tools if needed by setup.py or package installations
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
 
 COPY . /app
 
