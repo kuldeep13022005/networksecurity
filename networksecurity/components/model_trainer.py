@@ -24,8 +24,11 @@ from sklearn.ensemble import (
 )
 
 import mlflow.sklearn
-import dagshub
-dagshub.init(repo_owner='kuldeep13022005', repo_name='networksecurity', mlflow=True)
+try:
+    import dagshub
+    dagshub.init(repo_owner='kuldeep13022005', repo_name='networksecurity', mlflow=True)
+except Exception as e:
+    logging.warning(f"DagsHub initialization skipped/failed: {e}")
 
 class ModelTrainer:
     def __init__(self,model_trainer_config:ModelTrainerConfig,data_transformation_artifact:DataTransformationArtifact):
