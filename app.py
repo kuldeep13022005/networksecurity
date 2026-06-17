@@ -64,12 +64,17 @@ async def train_route():
 async def predict_route(request: Request,file: UploadFile = File(...)):
     try:
         df=pd.read_csv(file.file)
-        #print(df)
+        # Drop target column if present
+        if 'Result' in df.columns:
+            df_features = df.drop(columns=['Result'])
+        else:
+            df_features = df
+
         preprocesor=load_object("final_model/preprocessor.pkl")
         final_model=load_object("final_model/model.pkl")
         network_model = NetworkModel(preprocessor=preprocesor,model=final_model)
-        print(df.iloc[0])
-        y_pred = network_model.predict(df)
+        print(df_features.iloc[0])
+        y_pred = network_model.predict(df_features)
         print(y_pred)
         df['predicted_column'] = y_pred
         print(df['predicted_column'])
