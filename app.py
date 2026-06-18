@@ -46,6 +46,17 @@ app.add_middleware(
 from fastapi.templating import Jinja2Templates
 templates = Jinja2Templates(directory="./templates")
 
+from fastapi.responses import JSONResponse
+import traceback
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    tb = traceback.format_exc()
+    return JSONResponse(
+        status_code=500,
+        content={"message": "An error occurred during request processing", "error": str(exc), "traceback": tb}
+    )
+
 @app.get("/", tags=["authentication"])
 async def index():
     return RedirectResponse(url="/docs")
