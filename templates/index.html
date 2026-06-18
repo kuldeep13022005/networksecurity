@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛡️ Network Security Phishing URL Detection & ETL Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #0b0d19;
+            --card-bg: rgba(22, 26, 47, 0.65);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --secondary: #10b981;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --glow-color: rgba(99, 102, 241, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header section */
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .logo-area {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .logo-area i {
+            font-size: 32px;
+            color: #fff;
+        }
+
+        h1 {
+            font-size: 38px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #ffffff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Dashboard Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Card styles */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 30px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            opacity: 0.5;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #fff;
+        }
+
+        .card-title i {
+            color: var(--primary);
+        }
+
+        /* Drag and Drop Zone */
+        .dropzone {
+            border: 2px dashed rgba(99, 102, 241, 0.3);
+            border-radius: 16px;
+            padding: 40px 20px;
+            text-align: center;
+            background: rgba(99, 102, 241, 0.02);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .dropzone:hover, .dropzone.dragover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.1);
+        }
+
+        .dropzone i.upload-icon {
+            font-size: 48px;
+            color: var(--primary);
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
+
+        .dropzone p {
+            font-size: 15px;
+            color: var(--text-main);
+            margin-bottom: 5px;
+        }
+
+        .dropzone span {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-info {
+            margin-top: 15px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .file-info i {
+            color: var(--secondary);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 14px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 20px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #7c3aed);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: #374151;
+            color: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--text-main);
+            margin-top: 10px;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* MLflow / DagsHub Card styling */
+        .mlflow-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .meta-label {
+            color: var(--text-muted);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .meta-val {
+            font-weight: 600;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .meta-val.green {
+            color: var(--secondary);
+        }
+
+        /* Results table styling */
+        .results-container {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .table-wrapper {
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 14px;
+            border: 1px solid var(--card-border);
+            margin-top: 15px;
+        }
+
+        /* Override generated pandas table styles to match dark theme */
+        .table-wrapper table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            background: rgba(22, 26, 47, 0.4);
+            text-align: left;
+        }
+
+        .table-wrapper th {
+            background: rgba(99, 102, 241, 0.15) !important;
+            color: #fff !important;
+            padding: 12px 16px !important;
+            font-weight: 600 !important;
+            position: sticky;
+            top: 0;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .table-wrapper td {
+            padding: 12px 16px !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+            color: var(--text-main) !important;
+        }
+
+        .table-wrapper tr:hover td {
+            background: rgba(255, 255, 255, 0.03) !important;
+        }
+
+        .badge-safe {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--secondary);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .badge-phish {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        /* Loader */
+        .loader-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 0;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(99, 102, 241, 0.1);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .api-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .api-link a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .api-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <header>
+            <div class="logo-area">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h1>Phishing URL Detection Dashboard</h1>
+            <p class="subtitle">Secure ETL & ML Pipeline that processes network URL features and predicts whether a URL is phishing or safe using advanced classification models.</p>
+        </header>
+
+        <div class="dashboard-grid">
+            
+            <!-- Upload & Prediction Card -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fa-solid fa-file-csv"></i>
+                    <h2>Run Predictions</h2>
+                </div>
+                
+                <form id="prediction-form">
+                    <div class="dropzone" id="dropzone">
+                        <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                        <p>Drag & drop your CSV file here</p>
+                        <span>or click to browse from files</span>
+                        <input type="file" id="csv-file" class="file-input" accept=".csv">
+                    </div>
+                    
+                    <div class="file-info" id="file-info">
+                        <i class="fa-regular fa-file-code"></i>
+                        <span id="file-name">filename.csv</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="submit-btn" disabled>
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Predict Phishing Status
+                    </button>
+                </form>
+
+                <div class="api-link">
+                    Want to see raw API Swagger? <a href="/docs" target="_blank">Access API Docs <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                </div>
+            </div>
+
+            <!-- Pipeline & MLflow Card -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <h2>ML Pipeline & MLflow Details</h2>
+                </div>
+
+                <div class="mlflow-meta">
+                    <div class="meta-item">
+                        <div class="meta-label">
+                            <i class="fa-solid fa-cube"></i>
+                            Pipeline Status
+                        </div>
+                        <div class="meta-val green">Active (Production)</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">
+                            <i class="fa-solid fa-chart-bar"></i>
+                            Target Metric
+                        </div>
+                        <div class="meta-val">F1-Score / Accuracy</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">
+                            <i class="fa-solid fa-database"></i>
+                            ETL Database
+                        </div>
+                        <div class="meta-val">MongoDB Atlas</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">
+                            <i class="fa-solid fa-network-wired"></i>
+                            ML Registry
+                        </div>
+                        <div class="meta-val">DagsHub MLflow Server</div>
+                    </div>
+                </div>
+
+                <a href="https://dagshub.com/kuldeep13022005/networksecurity" target="_blank" class="btn btn-primary">
+                    <i class="fa-solid fa-square-poll-vertical"></i> View MLflow Runs & Experiments
+                </a>
+                
+                <a href="/train" target="_blank" class="btn btn-outline">
+                    <i class="fa-solid fa-arrows-spin"></i> Trigger Pipeline Re-Training
+                </a>
+            </div>
+
+        </div>
+
+        <!-- Loader Section -->
+        <div class="card loader-container" id="loader">
+            <div class="spinner"></div>
+            <p>Processing CSV and Running Model Inference...</p>
+        </div>
+
+        <!-- Prediction Output Card -->
+        <div class="card results-container" id="results-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                <div class="card-title" style="margin-bottom: 0;">
+                    <i class="fa-solid fa-square-check"></i>
+                    <h2>Prediction Results</h2>
+                </div>
+                <a href="/download" class="btn btn-primary" style="margin-top: 0; width: auto; background: linear-gradient(135deg, var(--secondary), #047857); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+                    <i class="fa-solid fa-download"></i> Download Full CSV Results
+                </a>
+            </div>
+            
+            <!-- Verdict Banner -->
+            <div id="verdict-banner" style="margin-bottom: 25px;"></div>
+            
+            <p class="subtitle" style="text-align: left; margin: 0 0 15px 0;">Previewing the first 10 predicted results below. The <code>predicted_column</code> shows the classification outcome.</p>
+
+            <div class="table-wrapper" id="table-wrapper">
+                <!-- HTML Table injected here -->
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('csv-file');
+        const fileInfo = document.getElementById('file-info');
+        const fileName = document.getElementById('file-name');
+        const submitBtn = document.getElementById('submit-btn');
+        const predictionForm = document.getElementById('prediction-form');
+        const loader = document.getElementById('loader');
+        const resultsCard = document.getElementById('results-card');
+        const tableWrapper = document.getElementById('table-wrapper');
+
+        // Trigger file input click
+        dropzone.addEventListener('click', () => fileInput.click());
+
+        // Handle Drag & Drop styling
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropzone.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('dragover');
+            }, false);
+        });
+
+        // Handle Drop file selection
+        dropzone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length) {
+                fileInput.files = files;
+                updateFileInfo(files[0].name);
+            }
+        });
+
+        // Handle Browse file selection
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) {
+                updateFileInfo(fileInput.files[0].name);
+            }
+        });
+
+        function updateFileInfo(name) {
+            fileName.textContent = name;
+            fileInfo.style.display = 'flex';
+            submitBtn.disabled = false;
+        }
+
+        // Handle Form Submission via AJAX
+        predictionForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Reset UI states
+            resultsCard.style.display = 'none';
+            loader.style.display = 'flex';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.error || 'Server error');
+                }
+
+                const tableHtml = await response.text();
+                
+                // Load HTML and style the output values dynamically
+                tableWrapper.innerHTML = tableHtml;
+                
+                // Read table headers to locate the predicted_column index
+                const headers = Array.from(tableWrapper.querySelectorAll('th')).map(th => th.textContent.trim());
+                const predictedColIndex = headers.indexOf('predicted_column');
+
+                let totalCount = 0;
+                let safeCount = 0;
+                let phishCount = 0;
+
+                const rows = tableWrapper.querySelectorAll('tbody tr');
+                totalCount = rows.length;
+
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    if (predictedColIndex !== -1 && cells.length > predictedColIndex) {
+                        const cell = cells[predictedColIndex];
+                        const val = cell.textContent.trim();
+                        if (val === '1.0' || val === '1') {
+                            safeCount++;
+                            cell.innerHTML = '<span class="badge-safe"><i class="fa-solid fa-check-circle"></i> Safe (1)</span>';
+                        } else if (val === '-1.0' || val === '-1' || val === '0.0' || val === '0') {
+                            phishCount++;
+                            cell.innerHTML = '<span class="badge-phish"><i class="fa-solid fa-triangle-exclamation"></i> Phishing (-1)</span>';
+                        }
+                    }
+                });
+
+                // Set Verdict Banner
+                const banner = document.getElementById('verdict-banner');
+                if (phishCount > 0) {
+                    banner.innerHTML = `
+                        <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 16px; padding: 20px; display: flex; align-items: center; gap: 15px;">
+                            <div style="width: 50px; height: 50px; background: rgba(239, 68, 68, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #ef4444; flex-shrink: 0;">
+                                <i class="fa-solid fa-circle-exclamation"></i>
+                            </div>
+                            <div>
+                                <h3 style="color: #ef4444; font-size: 18px; font-weight: 600; margin-bottom: 4px;">Verdict: Phishing Detected!</h3>
+                                <p style="color: var(--text-muted); font-size: 14px; line-height: 1.4;">Out of <strong>${totalCount}</strong> URLs analyzed in this preview, <strong>${phishCount}</strong> URL(s) were flagged as <strong>Phishing</strong>. Please use caution!</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    banner.innerHTML = `
+                        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.15); border-radius: 16px; padding: 20px; display: flex; align-items: center; gap: 15px;">
+                            <div style="width: 50px; height: 50px; background: rgba(16, 185, 129, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--secondary); flex-shrink: 0;">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
+                            <div>
+                                <h3 style="color: var(--secondary); font-size: 18px; font-weight: 600; margin-bottom: 4px;">Verdict: All Clean & Safe!</h3>
+                                <p style="color: var(--text-muted); font-size: 14px; line-height: 1.4;">All <strong>${totalCount}</strong> URLs analyzed in this preview were classified as <strong>Safe</strong>. No phishing attempts detected.</p>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                loader.style.display = 'none';
+                resultsCard.style.display = 'block';
+                submitBtn.disabled = false;
+
+                // Scroll to results card
+                resultsCard.scrollIntoView({ behavior: 'smooth' });
+
+            } catch (err) {
+                loader.style.display = 'none';
+                submitBtn.disabled = false;
+                alert(`Error: ${err.message}. Please verify that the CSV features match the expected columns.`);
+            }
+        });
+    </script>
+</body>
+</html>
