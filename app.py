@@ -15,7 +15,7 @@ from networksecurity.logging.logger import logging
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, File, UploadFile,Request
 from uvicorn import run as app_run
-from fastapi.responses import Response
+from fastapi.responses import Response, FileResponse
 from starlette.responses import RedirectResponse
 import pandas as pd
 
@@ -58,8 +58,15 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 @app.get("/", tags=["authentication"])
-async def index():
-    return RedirectResponse(url="/docs")
+async def index(request: Request):
+    try:
+        return templates.TemplateResponse(
+            request=request,
+            name="index.html",
+            context={}
+        )
+    except Exception as e:
+        raise NetworkSecurityException(e, sys)
 
 @app.get("/train")
 async def train_route():
@@ -103,6 +110,16 @@ async def predict_route(request: Request,file: UploadFile = File(...)):
         
     except Exception as e:
             raise NetworkSecurityException(e,sys)
+
+@app.get("/download")
+async def download_file():
+    try:
+        file_path = "prediction_output/output.csv"
+        if os.path.exists(file_path):
+            return FileResponse(file_path, media_type="text/csv", filename="predictions.csv")
+        return Response("File not found", status_code=404)
+    except Exception as e:
+        raise NetworkSecurityException(e, sys)
 
     
 if __name__=="__main__":
